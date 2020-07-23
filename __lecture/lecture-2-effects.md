@@ -179,11 +179,14 @@ const App = ({ color }) => {
 
 ```js
 const Modal = ({ handleClose }) => {
-  window.addEventListener("keydown", (ev) => {
-    if (ev.code === "Escape") {
-      handleClose();
-    }
+  React.useEffect(() => {
+    window.addEventListener("keydown", (ev) => {
+      if (ev.code === "Escape") {
+        handleClose();
+      }
+    })
   });
+}, []);
 
   return <div>Modal stuff</div>;
 };

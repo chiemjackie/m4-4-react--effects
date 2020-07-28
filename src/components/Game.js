@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 import cookieSrc from "../cookie.svg";
+import Item from "./Item"
+import useInterval from "../hooks/use-interval.hook"
 
 const items = [
   { id: "cursor", name: "Cursor", cost: 10, value: 1 },
@@ -11,30 +13,78 @@ const items = [
 ];
 
 const Game = () => {
-  // TODO: Replace this with React state!
-  const numCookies = 100;
-  const purchasedItems = {
-    cursor: 0,
-    grandma: 0,
-    farm: 0,
+
+  const [ numCookies, setNumCookies ] = React.useState(10000);
+  const [ purchasedItems, setPurchasedItems ] = React.useState(
+    {
+      cursor: 0,
+      grandma: 0,
+      farm: 0,
+    }
+  );
+
+  React.useEffect(() => {
+    document.title = `${numCookies} cookies - Cookie Clicker Workshop`;
+    console.log('mount');
+    return () => {
+      console.log('UNMOUNT');
+      document.title = `Cookie Clicker Workshop`;
+    }
+  }, [numCookies])
+
+  const handleClick = () => {
+    setNumCookies(numCookies + 1)
+  }
+
+  const calculateCookiesPerTick = () => {
+    let cookieIncome = 0;
+
+    for (let i = 0; i < items.length; i++) {
+      let itemValue = items[i].value;
+      let amountPurchased = Object.values(purchasedItems)[i];
+
+      cookieIncome = cookieIncome + (itemValue * amountPurchased);
+    }
+
+    return cookieIncome;
   };
+
+  useInterval(() => {
+    setNumCookies(numCookies + calculateCookiesPerTick())
+  }, 1000);
+
 
   return (
     <Wrapper>
       <GameArea>
         <Indicator>
           <Total>{numCookies} cookies</Total>
-          {/* TODO: Calcuate the cookies per second and show it here: */}
-          <strong>0</strong> cookies per second
+          <strong>{calculateCookiesPerTick()}</strong> cookies per second
         </Indicator>
-        <Button>
+        <Button onClick={handleClick}>
           <Cookie src={cookieSrc} />
         </Button>
       </GameArea>
 
       <ItemArea>
         <SectionTitle>Items:</SectionTitle>
-        {/* TODO: Add <Item> instances here, 1 for each item type. */}
+        {items.map(item => {
+          return(
+            <Item
+            key={item.id}
+            id={item.id}
+            name={item.name}
+            cost={item.cost}
+            value={item.value}
+            purchasedItems={purchasedItems}
+            setPurchasedItems={setPurchasedItems}
+            numCookies={numCookies}
+            setNumCookies={setNumCookies}
+            >
+          </Item>
+          )
+        })}
+          
       </ItemArea>
       <HomeLink to="/">Return home</HomeLink>
     </Wrapper>
